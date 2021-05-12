@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # version branch names in descending order
-VERSIONS=(master 7.1 7.0 6.4 6.3 6.2 6.1 5.4)
+VERSIONS=(master 7.3 7.2 7.1 7.0 6.4 6.3 6.2 6.1 5.4)
 
 # clean
 git checkout master
