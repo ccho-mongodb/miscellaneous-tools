@@ -40,7 +40,6 @@ const driverRepos = [
   { name: "mongo-ruby-driver", owner: "mongodb", desc: "Ruby Driver" },
   { name: "mongoid", owner: "mongodb", desc: "Mongoid ODM" },
   { name: "mongo-rust-driver", owner: "mongodb", desc: "Rust Driver" },
-  { name: "mongo-rust-driver", owner: "mongodb", desc: "Rust Driver" },
 ];
 
 const repoData = (async(repo) =>

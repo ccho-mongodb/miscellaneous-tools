@@ -5,15 +5,20 @@ require 'csv'
 # TODO: update authentication as PAT is no longer a valid way to auth.
 
 # How to run:
-# 1. Setup a GitHub personal access token (PAT)
-# 2. Add key value in GITHUB_PERSONAL_APP_KEY environment value
-# 3. Execute with `ruby sankey.rb`
+# 1. Setup a GitHub personal access token (PAT) and export it as the 
+#    GITHUIB_PERSONAL_APP_KEY
+# 2. gem install octokit 
+# 3. Set the REPO variable to the org/repository you want to scan
+# 4. Set the date range variable FROM_TIME (e.g. Time.new(YYYY, M, D)
+# 5. Execute with `ruby sankey.rb`
+# 6. Optionally plug into Google Charts https://developers.google.com/chart/interactive/docs/gallery/sankey
 
-# Reports on GitHub-related metrics that we care about for our Engineering Team OKRs
-# for the current quarter.
+# Reports on GitHub PR reviewer and reviewee frequency for a specified time
+# period.
 
 GITHUB_ACCESS_TOKEN = ENV['GITHUB_PERSONAL_APP_KEY']
-REPO = '10gen/apidocs'
+REPO = '10gen/docs-csfle-merge'
+FROM_TIME = Time.new(2022, 3, 1)
 REPORT_CSV = 'sankey.arrays'
 
 def export_to_csv(fn, cols, data)
@@ -26,7 +31,7 @@ def export_to_csv(fn, cols, data)
 end
 
 def year_start(now = Time.now)
-  Time.new(now.year, 5, 1)
+  Time.new(now.year, 3, 1)
 end
 
 def quarter_start(now = Time.now)
@@ -102,12 +107,12 @@ client = Octokit::Client.new(:access_token => GITHUB_ACCESS_TOKEN)
 #start_time = Time.now
 #t = quarter_start(start_time)
 # t = year_start(start_time)
-t = Time.new(2020, 7, 1)
-p "#{Time.now}: Starting run for all PRs since #{t}"
+
+p "#{Time.now}: Starting run for all PRs since #{FROM_TIME}"
 
 @reviewer_data = {}
 
-prs = qualified_pull_requests(client, REPO, t)
+prs = qualified_pull_requests(client, REPO, FROM_TIME)
 prs.each do |pr|
   begin
     item = {
