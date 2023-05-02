@@ -17,6 +17,8 @@ from collections import Counter
 # of the type. Hence, "there was, alas, but one".
 
 MAX_OCCUR=1
+OUTPUT_FILE='alas_output.txt'
+EXCLUSION_FILE="alas_exclude.txt"
 WORD_REGEX=re.compile("[\w'_\-]+")
 
 directory = 'source'
@@ -33,7 +35,13 @@ for root, dirs, files in os.walk(directory):
                 print(e)
 
 ctr = Counter(word_list)
-for w,v in sorted(ctr.items(), key=lambda pair: pair[1], reverse=True):
-    if (v <= MAX_OCCUR):
-        print("%s [%d]" % (w,v))
-
+if os.path.isfile(EXCLUSION_FILE):
+    exclusion_list = open(EXCLUSION_FILE).read()
+    for w,v in sorted(ctr.items(), key=lambda pair: pair[1], reverse=True):
+        if (v <= MAX_OCCUR):
+            if (not(w in exclusion_list)):
+                print("%s [%d]" % (w,v), file=open(OUTPUT_FILE, 'a'))
+else:
+    for w,v in sorted(ctr.items(), key=lambda pair: pair[1], reverse=True):
+        if (v <= MAX_OCCUR):
+            print("%s [%d]" % (w,v), file=open(OUTPUT_FILE, 'a'))
