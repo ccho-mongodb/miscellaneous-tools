@@ -1,9 +1,8 @@
 import os
 import re
 from spellchecker import SpellChecker
-from collections import defaultdict
-import string
 import argparse
+from collections import Counter
 
 # Usage
 # -----
@@ -13,6 +12,9 @@ import argparse
 # spellchecker on the output list and separates the list
 # into words that are spelled correctly and words that are potentially misspelled.
 #
+# If the same word is capitalized differently in two places, the two
+# versions are evaluated separately.
+#
 # Backstory
 # ---------
 # A user reported an issue with documentation in which "Atlas" was misspelled
@@ -21,9 +23,13 @@ import argparse
 #
 # Instructions
 # ------------
-# Run this file at the same level as your "/source" directory.
-# Update the OCCUR_FREQ=n constant in the main method to locate only words that are repeated
+# Make sure you install the required libraries by running `pip install -r requirements.txt`
+# Run this file at the same level as your "/source" directory:
+# e.g. python3 alas_but_one.py > output.txt
+#
+# Update the optional `occur_freq` constant in the main method to locate only words that are repeated
 # up to n times.
+#
 # When you run the file, you can include the optional "--noSpellCheck"
 # flag to disable the spellchecker function:
 # e.g. python3 alas_but_one.py --noSpellCheck > output.txt
@@ -32,42 +38,31 @@ import argparse
 def count_in_dir():
     directory = "source"
     filename_re = r"\.(txt|rst)$"
-    pattern = re.compile(r"\s*(?:[()]|'s|\s|-|`|/|#)\s*")
+    pattern = re.compile(
+        r"(?<!\S)[a-zA-Z0-9]+(?:[-'][a-zA-Z]+)*(?<!'s)[a-zA-Z]?(?=\W|$)"
+    )
+    # pattern = re.compile(r"\s*(?:[()]|'s|\s|-|`|/|#)\s*")
 
-    processed = []
-    words_and_freqs = []
+    fullwordlist = []
 
     for root, dirs, files in os.walk(directory):
         for filename in files:
             if re.search(filename_re, filename):
                 filepath = os.path.join(root, filename)
-                # print(filepath)
-                read_file = open(filepath, "r", encoding="utf-8")
-                # processed = []
+                read_file = open(filepath, "r", encoding="utf-8").read()
+                f = re.sub("[-,_,.]", " ", read_file)
+                words = re.findall(pattern, f)
+                fullwordlist += words
 
-                for line in read_file:
-                    line = line.strip()
-                    words = pattern.split(line)
-
-                    for word in words:
-                        pword = word.strip(string.punctuation)
-                        processed.append(pword.lower())
-
-    for elem in processed:
-        if elem != None:
-            words_and_freqs.append(elem)
-
-    freq = defaultdict(int)
-    for item in words_and_freqs:
-        freq[item] += 1
+    freq = Counter(fullwordlist)
 
     return freq
 
 
-def num_occurrences(dict, n):
+def num_occurrences(dict, occur_freq=1):
     occurs_upto_n_times = []
     for key in dict.keys():
-        if dict[key] <= n:
+        if dict[key] <= occur_freq:
             occurs_upto_n_times.append(key)
 
     return occurs_upto_n_times
@@ -77,31 +72,39 @@ def main():
     parser = argparse.ArgumentParser()
     x = count_in_dir()
 
-    OCCUR_FREQ = 1
-    lst = num_occurrences(x, OCCUR_FREQ)
+    occur_freq = 1
+    lst = num_occurrences(x, occur_freq)
 
     parser.add_argument("--noSpellCheck", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
     if args.noSpellCheck:
-        header_nocheck = "Words that occur up to {}x:".format(OCCUR_FREQ)
+        header_nocheck = "Words that occur up to {}x:".format(occur_freq)
         print("\n" + header_nocheck)
         print(len(header_nocheck) * "=", *lst, sep="\n- ")
     else:
-        spell = SpellChecker()
+        spell = SpellChecker(case_sensitive=True)
         spelled = spell.known(lst)
         header_occ1 = "Words that occur up to {}x, but spelled correctly:".format(
-            OCCUR_FREQ
+            occur_freq
         )
         print("\n" + header_occ1)
-        print(len(header_occ1) * "=", *spelled, sep="\n- ")
+        print(len(header_occ1) * "=")
+
+        for w in lst:
+            if w.lower() in spelled:
+                print("- " + w)
 
         misspelled = spell.unknown(lst)
         header_misspelled = "Words that occur up to {}x and are misspelled:".format(
-            OCCUR_FREQ
+            occur_freq
         )
         print("\n" + header_misspelled)
-        print(len(header_misspelled) * "=", *misspelled, sep="\n- ")
+        print(len(header_misspelled) * "=")
+
+        for w in lst:
+            if w.lower() in misspelled:
+                print("- " + w)
 
 
 if __name__ == "__main__":
