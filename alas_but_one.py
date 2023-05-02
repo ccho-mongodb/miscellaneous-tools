@@ -39,7 +39,7 @@ if os.path.isfile(EXCLUSION_FILE):
     exclusion_list = open(EXCLUSION_FILE).read()
     for w,v in sorted(ctr.items(), key=lambda pair: pair[1], reverse=True):
         if (v <= MAX_OCCUR):
-            if (not(w in exclusion_list)):
+            if (not((w + " ") in exclusion_list)):
                 print("%s [%d]" % (w,v), file=open(OUTPUT_FILE, 'a'))
 else:
     for w,v in sorted(ctr.items(), key=lambda pair: pair[1], reverse=True):
