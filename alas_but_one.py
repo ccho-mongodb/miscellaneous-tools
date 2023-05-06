@@ -1,5 +1,6 @@
 import os
 import re
+import argparse;
 from collections import Counter
 
 # Usage
@@ -10,6 +11,24 @@ from collections import Counter
 # Update the MAX_OCCUR=n constant to print out only words that are repeated
 # up to n times.
 #
+# Optional Modifiers
+# ------------------
+# --noCount
+#   Produces output of words matching the conditions without a count of how
+#   often the words occur. 
+#
+# --output <file>
+#   Writes the output of the script to the specified output file. This will
+#   delete any current contents of the file before writing the output.
+#
+# --exclusion <file>
+#   Takes the specified file and creates a list of words to exclude. Any words
+#   that are on the exclusion list will not be included in the output. The
+#   expected format of the exclusion file is each excluded word is on its own
+#   line. Tip: the easiest way to create an exclusion list is to create an
+#   output file with the --noCount option and use that file after verifying
+#   all words on that list are acceptable instances.
+#
 # Backstory
 # ---------
 # A user reported an issue with documentation in which "Atlas" was misspelled 
@@ -17,12 +36,29 @@ from collections import Counter
 # of the type. Hence, "there was, alas, but one".
 
 MAX_OCCUR=1
-OUTPUT_FILE='alas_output.txt'
-EXCLUSION_FILE="alas_exclude.txt"
 WORD_REGEX=re.compile("[\w'_\-]+")
 
 directory = 'source'
 filename_re = r'\.(txt|rst)$'
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--exclusion', type=str)
+parser.add_argument('--output', type=str)
+parser.add_argument('--noCount', action=argparse.BooleanOptionalAction)
+args=parser.parse_args()
+
+if args.exclusion:
+    if (os.path.isfile(args.exclusion)):
+        doExclusion = True
+        with open(args.exclusion, 'r') as f:
+            exclusion_list = f.read().splitlines()
+    else:
+        doExclusion = False
+        print("Error: Exclusion not performed. Exclusion file %s not found" % (args.exclusion))
+if args.output:
+    if (os.path.isfile(args.output)):
+        with open(args.output, 'r+') as file:
+            file.truncate(0)
 
 word_list = []
 for root, dirs, files in os.walk(directory):
@@ -35,13 +71,16 @@ for root, dirs, files in os.walk(directory):
                 print(e)
 
 ctr = Counter(word_list)
-if os.path.isfile(EXCLUSION_FILE):
-    exclusion_list = open(EXCLUSION_FILE).read()
-    for w,v in sorted(ctr.items(), key=lambda pair: pair[1], reverse=True):
-        if (v <= MAX_OCCUR):
-            if (not((w + " ") in exclusion_list)):
-                print("%s [%d]" % (w,v), file=open(OUTPUT_FILE, 'a'))
-else:
-    for w,v in sorted(ctr.items(), key=lambda pair: pair[1], reverse=True):
-        if (v <= MAX_OCCUR):
-            print("%s [%d]" % (w,v), file=open(OUTPUT_FILE, 'a'))
+for w,v in sorted(ctr.items(), key=lambda pair: pair[1], reverse=True):
+    addWord=((v <= MAX_OCCUR) and
+             (not(doExclusion) or
+                (doExclusion and not(w in exclusion_list))))
+    if addWord:
+        if args.noCount:
+            outputString="%s" % (w)
+        else:
+            outputString="%s [%d]" % (w,v)
+        if args.output:
+            print(outputString, file=open(args.output, 'a'))
+        else:
+            print(outputString)
