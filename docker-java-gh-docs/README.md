@@ -38,4 +38,6 @@ docker run -ti ccho-mongodb/hugo-legacy-build /bin/bash
 
 3. Once in the container's shell, you can run the ``publish-docs`` script to generate the reference documentation for a new version of the drivers. See the [README in docs-java-other](https://github.com/mongodb/docs-java-other/blob/main/README.md) for more information.
 
-4. It's not recommended to attempt any other builds on the Docker container other than the reference documentation. Instead, use [``docker cp``](https://docs.docker.com/engine/reference/commandline/cp/) or similar mechanism to move files from your Docker container to the ``mongo-java-driver`` submodule of ``docs-java-other`` in your local environment.
+:warning: **It's not recommended to attempt any other builds on the Docker container other than the reference documentation. Instead, use [``docker cp``](https://docs.docker.com/engine/reference/commandline/cp/) or similar mechanism to move files from your Docker container to the ``mongo-java-driver`` submodule of ``docs-java-other`` in your local environment.**
+
+:warning: **While ``docker cp`` is recommended for managing changes, you can set up a [GitHub personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) to push and pull commits from the Docker container.**
