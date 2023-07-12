@@ -1,3 +1,7 @@
+# Deprecated: this tool was designed to make use of the configuration structure 
+# of legacy builds. While the script should function, you should use more
+# specialized scripts # such as https://github.com/terakilobyte/checker
+#
 # Send HTTP requests to a collection of URLs
 #
 # Expects to be run in repository with conf.py containing an extlinks
