@@ -4,10 +4,12 @@ from collections import Counter
 
 # Usage
 # -----
-# This script reads files in the relative "source/" directory and sub-directories
-# named with the "rst" or "txt" extension and counts the instances of each
-# word (as matched by the WORD_REGEX constant).
-# Update the MAX_OCCUR=n constant to print out only words that are repeated
+# The main purpose of this script is to identify atomic typos by using
+# word frequency to identify the candidates.
+# It is currently hard-coded to read files in the relative "source/" directory
+# and sub-directories named with the "rst" or "txt" extension and counts the instances
+# of each word (as matched by the WORD_REGEX constant).
+# Update the MAX_OCCUR=n constant to print out only words that occur
 # up to n times.
 #
 # Backstory
